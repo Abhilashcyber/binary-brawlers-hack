@@ -22,7 +22,7 @@ const LandingPage: React.FC = () => {
           </Link>
         </div>
         <div className="card">
-          <Link to="/battleground">
+          <Link to="/contests">
             <img src={BattlegroundImage} alt="Battleground" />
             <h2>Battleground</h2>
           </Link>
