@@ -1,7 +1,9 @@
-// src/components/LandingPage.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './css/LandingPage.css';
+import PlaygroundImage from '../assets/playgroundjpg.jpg';
+import ArenaImage from '../assets/Arena.jpg';
+import BattlegroundImage from '../assets/battleground.jpg';
 
 const LandingPage: React.FC = () => {
   return (
@@ -9,19 +11,19 @@ const LandingPage: React.FC = () => {
       <div className="container">
         <div className="card">
           <Link to="/playground">
-            <img src="binary-brawlers\src\assets\arena.jpg" alt="Playground" />
+            <img src={PlaygroundImage} alt="Playground" />
             <h2>Playground</h2>
           </Link>
         </div>
         <div className="card">
           <Link to="/arena">
-            <img src="path/to/arena-image.png" alt="Arena" />
+            <img src={ArenaImage} alt="Arena" />
             <h2>Arena</h2>
           </Link>
         </div>
         <div className="card">
           <Link to="/battleground">
-            <img src="path/to/battleground-image.png" alt="Battleground" />
+            <img src={BattlegroundImage} alt="Battleground" />
             <h2>Battleground</h2>
           </Link>
         </div>
