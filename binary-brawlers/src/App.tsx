@@ -3,9 +3,8 @@ import CodeEditor from './components/CodeEditor';
 import OutputDisplay from './components/OutputDisplay';
 import './App.css';
 
-
 const App: React.FC = () => {
-  const [code, setCode] = useState<string>('#include<stdio.h>\nusing namespace std;\n\nint main() {\n\n    return 0;\n}\n');
+  const [code, setCode] = useState<string>('#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}\n');
   const [output, setOutput] = useState<string>('');
 
   const handleCodeChange = (value: string | undefined) => {
@@ -26,10 +25,19 @@ const App: React.FC = () => {
           code: code,
         }),
       });
+
       const data = await response.json();
-      setOutput(data.output);
+
+      if (response.ok) {
+        // Display output or errors from the response
+        setOutput(data.error ? `Error: ${data.error}` : `${data.output}`);
+      } else {
+        // Handle errors
+        setOutput(`Error: ${data.error || 'An unknown error occurred'}`);
+      }
     } catch (error) {
       console.error('Error executing code:', error);
+      setOutput('Network error');
     }
   };
 
@@ -37,7 +45,10 @@ const App: React.FC = () => {
     <div className="app-container">
       <div className="main-content">
         <CodeEditor value={code} onChange={handleCodeChange} />
-        <OutputDisplay output={output} />
+        <div className="output">
+          <h2 className='output-head'>Output</h2>
+          <OutputDisplay output={output} />
+        </div>
       </div>
       <button onClick={runCode}>Run Code</button>
     </div>

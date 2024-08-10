@@ -23,6 +23,17 @@ button {
   box-sizing: border-box; /* Include padding and border in element's total width and height */
 }
 
+.output{
+  display: flex;
+  flex-direction: column;
+}
+.output-head{
+  align-items: center;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
 .output-container {
   width: 50%;
   padding: 10px;

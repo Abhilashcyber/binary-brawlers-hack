@@ -23,16 +23,18 @@ app.post('/execute', (req, res) => {
 
   fs.writeFileSync(tempSourceFile.name, code);
 
-  let compileCommand = `g++ ${tempSourceFile.name} -o ${tempExecutableFile}`;
-  let runCommand = tempExecutableFile;
+  const compileCommand = `g++ ${tempSourceFile.name} -o ${tempExecutableFile}`;
+  const runCommand = tempExecutableFile;
 
   if (language === 'cpp') {
-    console.log('he')
-    exec(compileCommand, (compileError) => {
+    exec(compileCommand, (compileError, compileStdout, compileStderr) => {
       if (compileError) {
         console.error('Compilation error:', compileError);
         tempSourceFile.removeCallback();
-        return res.status(500).json({ error: 'Compilation failed' });
+        return res.status(500).json({
+          output: compileStdout,
+          error: compileStderr || compileError.message,
+        });
       }
 
       exec(runCommand, { input }, (runError, stdout, stderr) => {
@@ -41,7 +43,10 @@ app.post('/execute', (req, res) => {
 
         if (runError) {
           console.error('Execution error:', runError);
-          return res.status(500).json({ error: 'Execution failed' });
+          return res.status(500).json({
+            output: stdout,
+            error: stderr || runError.message,
+          });
         }
 
         res.json({
