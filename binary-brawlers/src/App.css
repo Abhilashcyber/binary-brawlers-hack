@@ -1,0 +1,35 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+button {
+  margin: 10px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
+
+.editor-container {
+  width: 50%;
+  border-right: 1px solid #ddd;
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.output-container {
+  width: 50%;
+  padding: 10px;
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+pre {
+  white-space: pre-wrap; /* Ensures long lines are wrapped */
+  word-wrap: break-word; /* Breaks long words */
+}
