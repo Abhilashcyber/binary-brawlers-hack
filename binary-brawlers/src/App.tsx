@@ -5,7 +5,7 @@ import './App.css';
 
 
 const App: React.FC = () => {
-  const [code, setCode] = useState<string>('console.log("Hello, World!");');
+  const [code, setCode] = useState<string>('#include<stdio.h>\nusing namespace std;\n\nint main() {\n\n    return 0;\n}\n');
   const [output, setOutput] = useState<string>('');
 
   const handleCodeChange = (value: string | undefined) => {
@@ -22,7 +22,7 @@ const App: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          language: 'node',
+          language: 'cpp',
           code: code,
         }),
       });

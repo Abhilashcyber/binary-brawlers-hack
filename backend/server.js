@@ -27,6 +27,7 @@ app.post('/execute', (req, res) => {
   let runCommand = tempExecutableFile;
 
   if (language === 'cpp') {
+    console.log('he')
     exec(compileCommand, (compileError) => {
       if (compileError) {
         console.error('Compilation error:', compileError);
