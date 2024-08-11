@@ -1,15 +1,12 @@
 import express from 'express';
-import { exec } from 'child_process';
 import bodyParser from 'body-parser';
-import fs from 'fs/promises'; 
-import path from 'path';
-import tmp from 'tmp';
 import cors from 'cors';
 import admin from 'firebase-admin';
-
-
+import { Worker } from 'worker_threads';
+import path from 'path';
 import { readFileSync } from 'fs';
-
+import rateLimit from 'express-rate-limit';
+import os from 'node-os-utils';
 const serviceAccount = JSON.parse(readFileSync(new URL('../serviceAccountKey.json', import.meta.url)));
 
 admin.initializeApp({
@@ -23,6 +20,48 @@ app.use(cors());
 
 const db = admin.firestore();
 
+//Funciton
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use(limiter);
+
+const cpu = os.cpu;
+const mem = os.mem;
+
+setInterval(async () => {
+  try {
+    const cpuUsage = await cpu.usage();
+    console.log(`CPU Usage: ${cpuUsage}%`);
+  } catch (error) {
+    console.error('Error fetching resource usage:', error);
+  }
+}, 5000);
+
+
+const executeCode = async (code, input) => {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(path.resolve('./codeExecutor.js'), {  
+      workerData: { code, input },
+    });
+
+    worker.on('message', resolve);
+    worker.on('error', reject);
+    worker.on('exit', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Worker stopped with exit code ${code}`));
+      }
+    });
+  });
+};
+
+
+
+
+
+//Function end
 app.post('/questions', async (req, res) => {
   const { title, description, constraints, testCases, driverCode, questionNumber } = req.body;
 
@@ -58,9 +97,10 @@ app.get('/questions', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 app.post('/execute', async (req, res) => {
   const { language, code, input } = req.body;
-
+  
   if (!language || !code) {
     return res.status(400).json({ error: 'Language and code are required' });
   }
@@ -70,42 +110,10 @@ app.post('/execute', async (req, res) => {
   }
 
   try {
-    const tempSourceFile = tmp.fileSync({ postfix: '.cpp' });
-    const tempExecutableFile = path.join(path.dirname(tempSourceFile.name), 'a.out');
-
-    await fs.writeFile(tempSourceFile.name, code);
-
-    const compileCommand = `g++ ${tempSourceFile.name} -o ${tempExecutableFile}`;
-    exec(compileCommand, (compileError, compileStdout, compileStderr) => {
-      if (compileError) {
-        console.error('Compilation error:', compileError);
-        tempSourceFile.removeCallback(); // Clean up temporary file
-        return res.status(500).json({
-          output: compileStdout,
-          error: compileStderr || compileError.message,
-        });
-      }
-
-      exec(tempExecutableFile, { input }, (runError, stdout, stderr) => {
-        tempSourceFile.removeCallback(); // Clean up temporary file
-        fs.unlink(tempExecutableFile).catch(err => console.error('Error removing executable:', err));
-
-        if (runError) {
-          console.error('Execution error:', runError);
-          return res.status(500).json({
-            output: stdout,
-            error: stderr || runError.message,
-          });
-        }
-
-        res.json({
-          output: stdout,
-          error: stderr,
-        });
-      });
-    });
+    const output = await executeCode(code, input);
+    res.json(output)
   } catch (error) {
-    console.error('Error during execution:', error);
+    console.error('Error adding job to queue:', error);
     res.status(500).json({ error: 'An error occurred during code execution' });
   }
 });
